@@ -24,8 +24,13 @@ class ClientVerifier(type):
         if any(i for i in ['accept', 'listen', 'socket'] if i in methods):
             raise TypeError('В классе обнаружено использование запрещённого метода!')
 
-        if not any(i for i in ['get_message', 'send_message'] if i in methods):
-            raise TypeError('Отсутствуют вызовы функций, работающих с сокетами.')
+        match clsname:
+            case 'ClientSender':
+                socket_fn = 'send_message'
+            case 'ClientReader':
+                socket_fn = 'get_message'
+        if socket_fn not in methods:
+            raise TypeError(f'У класса {clsname} отсутствует функция {socket_fn}!')
 
         super().__init__(clsname, bases, clsdict)
 

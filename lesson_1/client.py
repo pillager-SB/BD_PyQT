@@ -78,7 +78,7 @@ class ClientSender(threading.Thread, metaclass=ClientVerifier):
 
 
 # Класс для приема сообщений с сервера. Принимает сообщения, выводит в консоль.
-class ClientReader(threading.Thread):
+class ClientReader(threading.Thread, metaclass=ClientVerifier):
     def __init__(self, account_name, sock):
         self.account_name = account_name
         self.sock = sock
