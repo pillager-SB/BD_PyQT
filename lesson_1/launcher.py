@@ -10,18 +10,18 @@ while True:
                    's - запустить сервер и клиенты, '
                    'x - закрыть все окна: ')
 
-    if ACTION == 'q':
-        break
-    elif ACTION == 's':
-        PROCESSES.append(subprocess.Popen('python server.py',
-                                          creationflags=subprocess.CREATE_NEW_CONSOLE))
-        PROCESSES.append(subprocess.Popen('python client.py -n test1',
-                                          creationflags=subprocess.CREATE_NEW_CONSOLE))
-        PROCESSES.append(subprocess.Popen('python client.py -n test2',
-                                          creationflags=subprocess.CREATE_NEW_CONSOLE))
-        PROCESSES.append(subprocess.Popen('python client.py -n test3',
-                                          creationflags=subprocess.CREATE_NEW_CONSOLE))
-    elif ACTION == 'x':
-        while PROCESSES:
-            VICTIM = PROCESSES.pop()
-            VICTIM.kill()
+    match ACTION:
+        case 'q':
+            break
+        case 's':
+            clients = int(input('Введите количество клиентов для запуска: '))
+            # Запуск сервера.
+            PROCESSES.append(subprocess.Popen('python server.py',
+                                              creationflags=subprocess.CREATE_NEW_CONSOLE))
+            # Запуск клиентов.
+            for i in range(clients):
+                PROCESSES.append(subprocess.Popen(f'python client.py -n test{i + 1}',
+                                                  creationflags=subprocess.CREATE_NEW_CONSOLE))
+        case 'x':
+            while PROCESSES:
+                PROCESSES.pop().kill()

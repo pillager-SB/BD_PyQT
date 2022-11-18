@@ -4,8 +4,7 @@ import sys
 from functools import wraps
 
 sys.path.append('../')
-import logs.config_client_log
-import logs.config_server_log
+
 
 class Log:
     def __init__(self, logger=None):
