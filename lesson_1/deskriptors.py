@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from lesson_1.common.variables import DEFAULT_PORT
+from common.variables import DEFAULT_PORT
 
 SERVER_LOGGER = logging.getLogger('server')
 

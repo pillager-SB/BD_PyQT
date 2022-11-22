@@ -11,7 +11,7 @@ import logging
 import logs.config_client_log
 from errors import ReqFieldMissingError, NonDictInputError, ServerError, IncorrectDataReceivedError
 from decor import Log
-from lesson_1.metaclases import ClientVerifier
+from metaclases import ClientVerifier
 
 CLIENT_LOGGER = logging.getLogger('client')
 

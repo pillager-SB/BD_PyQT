@@ -1,16 +1,22 @@
+import logging
 import argparse
 import json
 import sys
-import socket
+import os
 import select
-import time
-import logging
-import logs.config_server_log
+import socket
+import threading
 from common.variables import *
 from common.utils import send_message, get_message
 from decor import Log
-from lesson_1.deskriptors import PortValidator
-from lesson_1.metaclases import ServerVerifier
+import logs.config_server_log
+from deskriptors import PortValidator
+from metaclases import ServerVerifier
+from server_database import ServerStorage
+
+sys.path.append(os.path.join(os.getcwd(), '..'))
+
+
 
 SERVER_LOGGER = logging.getLogger('server')
 
@@ -30,19 +36,22 @@ def arg_parser():
     return listen_address, listen_port
 
 
-class Server(metaclass=ServerVerifier):
-    # # Проверка получения корректного номера порта для работы сервера.
-    # listen_port = PortValidator('listen_port')
+class Server(threading.Thread, metaclass=ServerVerifier):
+    # Проверка получения корректного номера порта для работы сервера.
     port = PortValidator()
 
-    def __init__(self, listen_address, listen_port):
+    def __init__(self, listen_address, listen_port, database):
         self.addr = listen_address
         self.port = listen_port
+        #  База данных сервера.
+        self.database = database
         #  Списки:
         self.clients = []  # Список клиентов.
         self.messages = []  # Список очереди сообщений.
         # Словарь, содержащий имена пользователей и соответствующие им сокеты.
         self.names = dict()  # {client_name: client_socket}
+
+        super().__init__()
 
     def init_socket(self):
         SERVER_LOGGER.info(f'Запущен сервер, порт для подключений: {self.port}, '
@@ -55,11 +64,11 @@ class Server(metaclass=ServerVerifier):
         transport.bind((self.addr, self.port))
         transport.settimeout(0.5)
 
-        # Слушаем порт.
+        # Слушаем сокет.
         self.sock = transport
-        self.sock.listen(MAX_CONNECTION)
+        self.sock.listen()
 
-    def main_loop(self):
+    def run(self):
         # Инициализирую сокет.
         self.init_socket()
         # Основной цикл программы сервера.
@@ -67,7 +76,7 @@ class Server(metaclass=ServerVerifier):
             #  Ожидаю подключения, если timeout пройден, безопасно ловлю исключение.
             try:
                 client, client_address = self.sock.accept()
-            except OSError:
+            except OSError as e:
                 ...
             else:
                 SERVER_LOGGER.info(f'Установлено соединение с ПК {client_address}')
@@ -132,6 +141,8 @@ class Server(metaclass=ServerVerifier):
             # Если такого пользователя нет, регистрация, иначе - отправка ответа и завершение соединения.
             if message[USER][ACCOUNT_NAME] not in self.names.keys():
                 self.names[message[USER][ACCOUNT_NAME]] = client
+                client_ip, client_port = client.getpeername()
+                self.database.user_login(message[USER][ACCOUNT_NAME], client_ip, client_port)
                 send_message(client, {RESPONSE: 200})  # Если правильное сообщение о присутствии, принимаем и отвечаем.
             else:
                 send_message(client, {RESPONSE: 400, ERROR: 'Имя пользователя уже занято.'})
@@ -149,6 +160,7 @@ class Server(metaclass=ServerVerifier):
         elif ACTION in message \
                 and message[ACTION] == EXIT \
                 and ACCOUNT_NAME in message:
+            self.database.user_logout(message[ACCOUNT_NAME])
             self.clients.remove(self.names[ACCOUNT_NAME])
             self.names[ACCOUNT_NAME].close()
             del self.names[ACCOUNT_NAME]
@@ -162,8 +174,51 @@ class Server(metaclass=ServerVerifier):
 @Log(SERVER_LOGGER)
 def main():
     listen_address, listen_port = arg_parser()
-    server = Server(listen_address, listen_port)
-    server.main_loop()
+    # Инициализирую базу данных.
+    database = ServerStorage()
+
+    # Создаю экземпляр класса сервера и запускаю его.
+    server = Server(listen_address, listen_port, database)
+    server.daemon = True
+    server.start()
+
+    #  Вывожу справку.
+    print(SERVER_HELP)
+
+    # Основной цикл сервера:
+    while True:
+        match input('Введите команду: '):
+            case 'help':
+                print(SERVER_HELP)
+            case 'exit':
+                break
+            case 'users':
+                all_users = sorted(database.users_list())
+                if all_users:
+                    print(*[f'Пользователь {user[0]}, последний вход: {user[1]}'
+                            for user in all_users], sep='\n')
+                else:
+                    print('No data')
+            case 'connected':
+                active_users = sorted(database.active_users_list())
+                if active_users:
+                    print(*[f'Пользователь {user[1]}, подключен: {user[2]}, '
+                            f'время подключения: {user[3]}'
+                            for user in active_users], sep='\n')
+                else:
+                    print('No data')
+            case 'loghist':
+                name = input(SERVER_HELP_LOGHIST)
+                history = sorted(database.login_history(name))
+                if history:
+                    print(*[f'Пользователь {user[0]}, время входа: {user[1]}. '
+                            f'Вход с: {user[2]}:{user[3]}'
+                            for user in history], sep='\n')
+                else:
+                    print('No data')
+
+            case _:
+                print('Команда не распознана')
 
 
 if __name__ == '__main__':
