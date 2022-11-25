@@ -14,7 +14,6 @@ ENCODING = 'utf-8'
 # Установка для верхнего уровня логирования.
 LOGGING_LEVEL = logging.DEBUG
 
-
 # Основные ключи протокола JIM.
 ACTION = 'action'
 TIME = 'time'
@@ -30,16 +29,37 @@ ERROR = 'error'
 MESSAGE = 'message'
 MESSAGE_TEXT = 'mess_text'
 EXIT = 'exit'
+GET_CONTACTS = 'get_contacts'
+LIST_INFO = 'data_list'
+REMOVE_CONTACT = 'remove'
+ADD_CONTACT = 'add'
+USERS_REQUEST = 'get_users'
+
+# Ответ.
+RESPONSE_200 = {RESPONSE: 200}
+RESPONSE_202 = {RESPONSE: 202, LIST_INFO: None}
+
+
 HELP = f'Список поддерживаемых команд:\n' \
        f'-m, message - отправить сообщение. Для кого и текст сообщения - ввод в строке.\n' \
-       f'-h, -?, help - вывести подсказки по командам.\n' \
-       f'-e, exit - выход из программы.'
+       f'-h, history - история сообщений.\n' \
+       f'-c, contacts - список контактов.\n' \
+       f'-e, edit - редактирование списка контактов.\n'\
+       f'-?, help - вывести подсказки по командам.\n' \
+       f'-q, exit - выход из программы.\n' \
+
+
+
 SERVER_HELP = f'Список поддерживаемых команд:\n' \
               f'users - список известных пользователей.\n' \
               f'connected - список подключенных пользователей.\n' \
               f'loghist - история входов пользователя.\n' \
               f'exit - завершение работы сервера.\n' \
               f'help - вывод справки по поддерживаемым командам.'
+
 SERVER_HELP_LOGHIST = f'Введите имя пользователя для просмотра истории.\n' \
                       f'Для вывода всей истории, нажмите Enter.'
+
 SERVER_DATABASE = 'sqlite:///server_base.db3'
+
+CLIENT_DATABASE = 'sqlite:///client_'
