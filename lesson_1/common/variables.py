@@ -38,7 +38,7 @@ USERS_REQUEST = 'get_users'
 # Ответ.
 RESPONSE_200 = {RESPONSE: 200}
 RESPONSE_202 = {RESPONSE: 202, LIST_INFO: None}
-
+ATTEMPTS = 5
 
 HELP = f'Список поддерживаемых команд:\n' \
        f'-m, message - отправить сообщение. Для кого и текст сообщения - ввод в строке.\n' \
@@ -62,4 +62,4 @@ SERVER_HELP_LOGHIST = f'Введите имя пользователя для п
 
 SERVER_DATABASE = 'sqlite:///server_base.db3'
 
-CLIENT_DATABASE = 'sqlite:///client_'
+CLIENT_DATABASE = 'sqlite:///client.client_'

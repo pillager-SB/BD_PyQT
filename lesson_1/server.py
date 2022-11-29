@@ -1,7 +1,5 @@
 import configparser
-import logging
 import argparse
-import json
 import sys
 import os
 import select
@@ -13,8 +11,7 @@ from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from common.variables import *
 from common.utils import send_message, get_message
-from decor import Log
-import logs.config_server_log
+from common.decor import Log
 from deskriptors import PortValidator
 from metaclases import ServerVerifier
 from server_database import ServerStorage
@@ -329,5 +326,7 @@ def main():
 
 
 
+
 if __name__ == '__main__':
     main()
+

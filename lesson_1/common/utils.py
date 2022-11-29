@@ -2,9 +2,9 @@ import json
 import sys
 
 sys.path.append('../')
-from errors import IncorrectDataReceivedError, NonDictInputError
+from common.errors import IncorrectDataReceivedError, NonDictInputError
 from common.variables import MAX_PACKAGE_LENGTH, ENCODING
-from decor import Log
+from common.decor import Log
 
 
 @Log()
@@ -21,8 +21,8 @@ def get_message(sock):
         response = json.loads(json_response)
         if isinstance(response, dict):
             return response
-        raise IncorrectDataReceivedError
-    raise IncorrectDataReceivedError
+        else:
+            raise TypeError
 
 
 @Log()
@@ -31,9 +31,6 @@ def send_message(sock, message):
     Функция принимает словарь, извлекает из него строку,
     строку кодирует в байты и отправляет.
     """
-    if not isinstance(message, dict):
-        raise NonDictInputError
-
     js_message = json.dumps(message)
     encoded_message = js_message.encode(ENCODING)
     sock.send(encoded_message)

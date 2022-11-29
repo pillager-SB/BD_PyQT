@@ -22,7 +22,7 @@ LOGGER.setLevel(LOGGING_LEVEL)
 
 if __name__ == '__main__':
     LOGGER.critical('Критическая ошибка')
-    LOGGER.error('Ошибка')
-    LOGGER.warning('Предупреждение')
-    LOGGER.info('Информационное сообщение')
-    LOGGER.debug('Отладочная информация')
+    # LOGGER.error('Ошибка')
+    # LOGGER.warning('Предупреждение')
+    # LOGGER.info('Информационное сообщение')
+    # LOGGER.debug('Отладочная информация')

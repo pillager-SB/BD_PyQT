@@ -3,7 +3,7 @@ import logging
 import sys
 from functools import wraps
 
-sys.path.append('../')
+sys.path.append('../../')
 
 
 class Log:
