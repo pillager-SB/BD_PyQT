@@ -6,9 +6,8 @@ from PyQt5.QtWidgets import QApplication
 from common.decor import log
 from common.utils import *
 from server.core import MessageProcessor
-from server.database import ServerStorage
 from server.main_window import MainWindow
-
+from server.database import ServerStorage
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
