@@ -27,7 +27,7 @@ def arg_parser(default_port, default_address):
     parser.add_argument('-p', '--port', default=DEFAULT_PORT, type=int, help='Read port IP address', nargs='?')
     parser.add_argument('-a', '--addr', default='', help='Reading an IP address', nargs='?')
     parser.add_argument('-no_gui', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(sys.argv[1:])
     listen_address = args.addr
     listen_port = args.port
     gui_flag = args.no_gui

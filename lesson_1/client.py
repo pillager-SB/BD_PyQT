@@ -35,7 +35,7 @@ def arg_parser():
     parser.add_argument('-p', '--password', default='',
                         help="Password", nargs='?')
 
-    args = parser.parse_args()
+    args = parser.parse_args(sys.argv[1:])
     server_address = args.addr
     server_port = args.port
     client_name = args.name

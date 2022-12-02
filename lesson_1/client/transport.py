@@ -43,7 +43,7 @@ class ClientTransport(threading.Thread, QObject):
         # Набор ключей для шифрования
         self.keys = keys
         # Устанавливаем соединение:
-        self.connection_init(port, ip_address)
+        self.connection_init(ip_address, port)
         # Обновляю таблицы известных пользователей и контактов.
         try:
             self.user_list_update()
