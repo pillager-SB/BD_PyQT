@@ -1,8 +1,7 @@
 import datetime
 import os
-import sys
-from common.variables import CLIENT_DATABASE
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+from common.variables import *
+from sqlalchemy import create_engine, Table, Column, Integer, String, DateTime, Text, MetaData
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 
@@ -10,8 +9,10 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 class ClientDatabase:
     Base = declarative_base()
 
-    # Класс - отображение таблицы известных пользователей.
     class KnownUsers(Base):
+        """
+        Класс - отображение таблицы известных пользователей.
+        """
         __tablename__ = 'known_users'
         id = Column(Integer, primary_key=True)
         username = Column(String)
@@ -20,8 +21,10 @@ class ClientDatabase:
             self.id = None
             self.username = user
 
-    # Класс - отображение таблицы истории сообщений
-    class MessageHistory(Base):
+    class MessageStat(Base):
+        """
+        Класс - отображение таблицы статистики сообщений.
+        """
         __tablename__ = 'message_history'
         id = Column(Integer, primary_key=True)
         contact = Column(String)
@@ -36,8 +39,10 @@ class ClientDatabase:
             self.message = message
             self.date = datetime.datetime.now()
 
-    # Класс - отображение списка контактов
     class Contacts(Base):
+        """
+        Класс - отображение списка контактов.
+        """
         __tablename__ = 'contacts'
         id = Column(Integer, primary_key=True)
         name = Column(String, unique=True)
@@ -48,13 +53,15 @@ class ClientDatabase:
 
     # Конструктор класса:
     def __init__(self, name):
-        self.engine = create_engine(CLIENT_DATABASE + f'{name}.db3',
-                                    echo=False,
-                                    pool_recycle=7200,
-                                    connect_args={'check_same_thread': False})
+        path = os.path.dirname(os.path.realpath(__file__))
+        filename = f'client_{name}.db3'
+        self.database_engine = create_engine(f'sqlite:///{os.path.join(path, filename)}',
+                                             echo=False,
+                                             pool_recycle=7200,
+                                             connect_args={'check_same_thread': False})
 
-        self.Base.metadata.create_all(self.engine)
-        Session = sessionmaker(bind=self.engine)
+        self.Base.metadata.create_all(self.database_engine)
+        Session = sessionmaker(bind=self.database_engine)
         self.session = Session()
 
         # Необходимо очистить таблицу контактов, т.к. при запуске они подгружаются с сервера.
@@ -63,29 +70,29 @@ class ClientDatabase:
 
     def add_contact(self, contact):
         """
-        Функция добавления контактов.
-        :param contact:
-        :return:
+        Метод добавления контактов.
         """
         if not self.session.query(self.Contacts).filter_by(name=contact).count():
             contact_row = self.Contacts(contact)
             self.session.add(contact_row)
             self.session.commit()
 
+    def contacts_clear(self):
+        """
+        Метод очистки таблицы со списком контактов.
+        """
+        self.session.query(self.Contacts).delete()
+
     def del_contact(self, contact):
         """
-        Функция удаления контакта.
-        :param contact:
-        :return:
+        Метод удаления контакта.
         """
         self.session.query(self.Contacts).filter_by(name=contact).delete()
 
     def add_users(self, users_list):
         """
-        Функция добавления известных пользователей.
+        Метод добавления известных пользователей.
         Пользователи получаются только с сервера, поэтому при каждом обращении таблица очищается.
-        :param users_list:
-        :return:
         """
         self.session.query(self.KnownUsers).delete()
         for user in users_list:
@@ -95,35 +102,27 @@ class ClientDatabase:
 
     def save_message(self, contact, direction, message):
         """
-        Функция сохраняющая сообщения.
-        :param contact:
-        :param direction:
-        :param message:
-        :return:
+        Метод сохраняющий сообщения.
         """
-        message_row = self.MessageHistory(contact, direction, message)
+        message_row = self.MessageStat(contact, direction, message)
         self.session.add(message_row)
         self.session.commit()
 
     def get_contacts(self):
         """
-        Функция возвращающая контакты.
-        :return:
+        Метод возвращающий контакты.
         """
         return [contact[0] for contact in self.session.query(self.Contacts.name).all()]
 
     def get_users(self):
         """
-        Функция возвращающая список известных пользователей.
-        :return:
+        Метод возвращающий список известных пользователей.
         """
         return [user[0] for user in self.session.query(self.KnownUsers.username).all()]
 
     def check_user(self, user):
         """
-        Функция-проверка есть ли пользователь в известных.
-        :param user:
-        :return:
+        Метод-проверка есть ли пользователь в известных.
         """
         if self.session.query(self.KnownUsers).filter_by(username=user).count():
             return True
@@ -132,9 +131,7 @@ class ClientDatabase:
 
     def check_contact(self, contact):
         """
-        Функция-проверка есть ли пользователь в контактах.
-        :param contact:
-        :return:
+        Метод-проверка есть ли пользователь в контактах.
         """
         if self.session.query(self.Contacts).filter_by(name=contact).count():
             return True
@@ -143,9 +140,9 @@ class ClientDatabase:
 
     def get_history(self, contact):
         """
-        Функция возвращающая историю переписки.
+        Метод возвращающий историю переписки с определенным пользователем.
         """
-        query = self.session.query(self.MessageHistory).filter_by(contact=contact)
+        query = self.session.query(self.MessageStat).filter_by(contact=contact)
         return [(history_row.contact, history_row.direction, history_row.message, history_row.date)
                 for history_row in query.all()]
 
@@ -153,7 +150,6 @@ class ClientDatabase:
 # отладка
 
 if __name__ == '__main__':
-
     test_db = ClientDatabase('test1')
     # for i in ['test3', 'test4', 'test5']:
     #     test_db.add_contact(i)
@@ -168,6 +164,7 @@ if __name__ == '__main__':
     # print(test_db.get_history('test2'))
     # print(test_db.get_history(contact='test2'), "direction")
     # print(test_db.get_history(contact='test1'), "direction")
+    print(sorted(test_db.get_history('test2'), key=lambda item: item[3]))
     # print(test_db.get_history('test3'))
     # test_db.del_contact('test4')
     # print(test_db.get_contacts())

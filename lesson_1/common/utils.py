@@ -2,12 +2,11 @@ import json
 import sys
 
 sys.path.append('../')
-from common.errors import IncorrectDataReceivedError, NonDictInputError
-from common.variables import MAX_PACKAGE_LENGTH, ENCODING
-from common.decor import Log
+from common.variables import *
+from common.decor import log
 
 
-@Log()
+@log
 def get_message(sock):
     """
     Функция принимает и декодирует сообщение.
@@ -25,9 +24,10 @@ def get_message(sock):
             raise TypeError
 
 
-@Log()
+@log
 def send_message(sock, message):
     """
+    Функция отправки словарей через сокет.
     Функция принимает словарь, извлекает из него строку,
     строку кодирует в байты и отправляет.
     """

@@ -1,7 +1,7 @@
 import dis
 
 
-class ClientVerifier(type):
+class ServerMaker(type):
 
     def __init__(cls, clsname, bases, clsdict):
 
@@ -35,8 +35,7 @@ class ClientVerifier(type):
         super().__init__(clsname, bases, clsdict)
 
 
-
-class ServerVerifier(type):
+class ClientMaker(type):
 
     def __init__(cls, clsname, bases, clsdict):
         methods = []  # Список методов, используемых в функциях класса (LOAD_GLOBAL, LOAD_METHOD).
